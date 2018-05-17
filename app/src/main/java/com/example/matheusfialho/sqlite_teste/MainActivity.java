@@ -22,11 +22,12 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private EditText txtNome, txtIdade, txtCNome;
-    private Button btnCadastrar, btnConsultar, btnCNome;
+    private Button btnCadastrar, btnConsultar, btnCNome, btnAtualizar;
     private ClienteDAO dao;
     private List<Cliente> clientes;
     private RecyclerView recyclerView;
     private ClienteAdapter adapter;
+    private List<Cliente> clienteList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         txtNome = (EditText) findViewById(R.id.txtNome);
         txtIdade = (EditText) findViewById(R.id.txtIdade);
         txtCNome = (EditText) findViewById(R.id.txtCNome);
+
+        btnAtualizar = (Button) findViewById(R.id.butAtualizar);
 
         btnCadastrar = (Button)findViewById(R.id.butCadastrar);
         btnCadastrar.setOnClickListener(new View.OnClickListener() {
@@ -69,11 +72,11 @@ public class MainActivity extends AppCompatActivity {
                             .setAction("Action", null).show();
                 }
 
-                //String resultado;
-                boolean resultado;
-                //resultado = ClienteDAO.getInstance(getApplicationContext()).salvar(nome, idade);
-                //Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_LONG).show();
                 /*
+                String resultado;
+                boolean resultado;
+                resultado = ClienteDAO.getInstance(getApplicationContext()).salvar(nome, idade);
+                Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_LONG).show();
                 boolean resultado;
                 resultado = ClienteDAO.salvar(nome, idade);
                 Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_LONG).show();
@@ -95,16 +98,54 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("Clientes", listaClientes.get(i).getNome());
                     }
                 }
+
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton inicial = (FloatingActionButton) findViewById(R.id.inicial);
+        inicial.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                findViewById(R.id.includemain).setVisibility(View.INVISIBLE);
+                voltarInicial();
+            }
+        });
+
+        FloatingActionButton add = (FloatingActionButton) findViewById(R.id.add);
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
-                findViewById(R.id.add).setVisibility(View.INVISIBLE);
+                findViewById(R.id.butAtualizar).setVisibility(View.INVISIBLE);
+                escondeBotoes();
+
+            }
+        });
+
+        FloatingActionButton buscar = (FloatingActionButton) findViewById(R.id.buscar);
+        buscar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
+                escondeBotoes();
+
+            }
+        });
+
+        FloatingActionButton edit = (FloatingActionButton) findViewById(R.id.edit);
+        edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                telaAtualizar();
+
+            }
+        });
+
+        FloatingActionButton delete = (FloatingActionButton) findViewById(R.id.delete);
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
+                escondeBotoes();
 
             }
         });
@@ -118,12 +159,85 @@ public class MainActivity extends AppCompatActivity {
                 dao = new ClienteDAO(getBaseContext());
                 dao.retornaConsulta(nome);
 
-
             }
         });
 
     }
 
+    private void escondeBotoes(){
+        findViewById(R.id.includemain).setVisibility(View.INVISIBLE);
+
+        findViewById(R.id.add).setVisibility(View.INVISIBLE);
+        findViewById(R.id.buscar).setVisibility(View.INVISIBLE);
+        findViewById(R.id.edit).setVisibility(View.INVISIBLE);
+        findViewById(R.id.delete).setVisibility(View.INVISIBLE);
+
+    }
+
+    private void telaAtualizar(){
+        escondeBotoes();
+
+        findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
+        findViewById(R.id.butConsultar).setVisibility(View.INVISIBLE);
+        clienteList = new ArrayList<>();
+        String nome = txtCNome.getText().toString();
+        dao = new ClienteDAO(getBaseContext());
+        clienteList = dao.retornaConsulta(nome);
+        btnCNome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("teste", "Clicou!");
+                if(clienteList.size() == 1){
+                    findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
+                    //String idade = toString(clienteList.get(0).getIdade());
+                    txtNome.setText(clienteList.get(0).getNome());
+                    txtIdade.setText(clienteList.get(0).getIdade()+"");
+                } else {
+                    Toast.makeText(getApplicationContext(), "Seja mais específico!", Toast.LENGTH_SHORT).show();
+                }
+
+
+
+            }
+        });
+        final int id = clienteList.get(0).getId();
+        final String novoNome = txtNome.getText().toString();
+        final int Novaidade = Integer.parseInt(txtIdade.getText().toString());
+        btnAtualizar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dao = new ClienteDAO(getBaseContext());
+                boolean sucesso = dao.salvar(id, novoNome, Novaidade);
+                if(sucesso) {
+                    //limpa os campos
+                    txtNome.setText("");
+                    txtIdade.setText("");
+                    txtCNome.setText("");
+                    Snackbar.make(v, "Atualizou!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    voltarInicial();
+
+                }else{
+                    Snackbar.make(v, "Erro ao atualizar, consulte os logs!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
+            }
+        });
+
+
+    }
+
+    private void voltarInicial(){
+        findViewById(R.id.includemain).setVisibility(View.VISIBLE);
+        findViewById(R.id.add).setVisibility(View.VISIBLE);
+        findViewById(R.id.buscar).setVisibility(View.VISIBLE);
+        findViewById(R.id.edit).setVisibility(View.VISIBLE);
+        findViewById(R.id.delete).setVisibility(View.VISIBLE);
+
+        findViewById(R.id.includecadastro).setVisibility(View.INVISIBLE);
+        findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
+    }
 
     /*
     private void configurarRecycler() {

@@ -36,16 +36,24 @@ public class ClienteDAO {
     }
     */
 
-
-
     public boolean salvar(String nome, int idade){
+        return salvar(0, nome, idade);
+    }
+
+
+    public boolean salvar(int id, String nome, int idade){
         boolean resultado;
         //db = gw.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
         cv.put("Nome", nome);
         cv.put("Idade", idade);
-        resultado = gw.getDatabase().insert(TABLE_CLIENTES, null, cv) > -1;
+        //resultado = gw.getDatabase().insert(TABLE_CLIENTES, null, cv) > -1;
+
+        if(id > 0)
+            resultado = gw.getDatabase().update(TABLE_CLIENTES, cv, "_ID = ?", new String[]{ id + "" }) > 0;
+        else
+            resultado = gw.getDatabase().insert(TABLE_CLIENTES, null, cv) > 0;
         return resultado;
 
         /*resultado = db.insert(TABLE_CLIENTES, null, cv);
