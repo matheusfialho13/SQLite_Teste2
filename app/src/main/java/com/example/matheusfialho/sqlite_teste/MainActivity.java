@@ -1,8 +1,10 @@
 package com.example.matheusfialho.sqlite_teste;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,12 +24,13 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private EditText txtNome, txtIdade, txtCNome;
-    private Button btnCadastrar, btnConsultar, btnCNome, btnAtualizar;
+    private Button btnCadastrar, btnConsultar, btnCNome, btnAtualizar, btnDeletar;
     private ClienteDAO dao;
     private List<Cliente> clientes;
     private RecyclerView recyclerView;
     private ClienteAdapter adapter;
     private List<Cliente> clienteList;
+    private int controle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,15 +62,11 @@ public class MainActivity extends AppCompatActivity {
                 dao = new ClienteDAO(getBaseContext());
                 boolean sucesso = dao.salvar(nome, idade);
                 if(sucesso) {
-                    //limpa os campos
-                    txtNome.setText("");
-                    txtIdade.setText("");
+                    limpaDados();
 
                     Snackbar.make(view, "Salvou!", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
-                    findViewById(R.id.includemain).setVisibility(View.VISIBLE);
-                    findViewById(R.id.includecadastro).setVisibility(View.INVISIBLE);
-                    findViewById(R.id.add).setVisibility(View.VISIBLE);
+                    voltarInicial();
                 }else{
                     Snackbar.make(view, "Erro ao salvar, consulte os logs!", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
@@ -116,8 +115,12 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                controle = 1;
                 findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
+                findViewById(R.id.butCadastrar).setVisibility(View.VISIBLE);
                 findViewById(R.id.butAtualizar).setVisibility(View.INVISIBLE);
+                findViewById(R.id.butDeletar).setVisibility(View.INVISIBLE);
+                limpaDados();
                 escondeBotoes();
 
             }
@@ -127,9 +130,11 @@ public class MainActivity extends AppCompatActivity {
         buscar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                controle = 2;
                 findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
+                findViewById(R.id.butConsultar).setVisibility(View.VISIBLE);
                 escondeBotoes();
-                txtCNome.setText("");
+                limpaDados();
 
             }
         });
@@ -138,7 +143,9 @@ public class MainActivity extends AppCompatActivity {
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                controle = 3;
                 telaAtualizar();
+                limpaDados();
 
             }
         });
@@ -147,8 +154,9 @@ public class MainActivity extends AppCompatActivity {
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
-                escondeBotoes();
+                controle = 4;
+                telaDeletar();
+                limpaDados();
 
             }
         });
@@ -166,6 +174,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnDeletar = (Button) findViewById(R.id.butDeletar);
+        /*
+        btnDeletar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });*/
+
+
+
     }
 
     private void escondeBotoes(){
@@ -181,57 +200,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void telaAtualizar(){
-        escondeBotoes();
 
-        findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
-        findViewById(R.id.butConsultar).setVisibility(View.INVISIBLE);
+        if(controle == 3) {
+            escondeBotoes();
+            findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
+            findViewById(R.id.butConsultar).setVisibility(View.INVISIBLE);
+            findViewById(R.id.butDeletar).setVisibility(View.INVISIBLE);
 
-        clienteList = new ArrayList<>();
-        dao = new ClienteDAO(getBaseContext());
+            clienteList = new ArrayList<>();
+            dao = new ClienteDAO(getBaseContext());
 
-        btnCNome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String nome = txtCNome.getText().toString();
-                clienteList = dao.retornaConsulta(nome);
-                if(clienteList != null) {
-                    if (clienteList.size() == 1) {
-                        Log.d("teste", "Clicou!");
-                        findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
-                        findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
-                        txtNome.setText(clienteList.get(0).getNome());
-                        txtIdade.setText(clienteList.get(0).getIdade() + "");
+            if(controle == 3) {
+                btnCNome.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String nome = txtCNome.getText().toString();
+                        clienteList = dao.retornaConsulta(nome);
+                        if (clienteList != null) {
+                            if (clienteList.size() == 1) {
+                                Log.d("teste", "Clicou!");
+                                findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
+                                findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
+                                findViewById(R.id.butAtualizar).setVisibility(View.VISIBLE);
+                                txtNome.setText(clienteList.get(0).getNome());
+                                txtIdade.setText(clienteList.get(0).getIdade() + "");
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Seja mais específico!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                    }
+
+                });
+            }
+            btnAtualizar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int id = clienteList.get(0).getId();
+                    String novoNome = txtNome.getText().toString();
+                    int NovaIdade = Integer.parseInt(txtIdade.getText() + "");
+                    dao = new ClienteDAO(getBaseContext());
+                    boolean sucesso = dao.salvar(id, novoNome, NovaIdade);
+                    if (sucesso) {
+                        limpaDados();
+                        Snackbar.make(v, "Atualizou!", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                        voltarInicial();
+
                     } else {
-                        Toast.makeText(getApplicationContext(), "Seja mais específico!", Toast.LENGTH_SHORT).show();
+                        Snackbar.make(v, "Erro ao atualizar, consulte os logs!", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
                 }
-
-            }
-        });
-
-        btnAtualizar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int id = clienteList.get(0).getId();
-                String novoNome = txtNome.getText().toString();
-                int NovaIdade = Integer.parseInt(txtIdade.getText()+"");
-                dao = new ClienteDAO(getBaseContext());
-                boolean sucesso = dao.salvar(id, novoNome, NovaIdade);
-                if(sucesso) {
-                    //limpa os campos
-                    txtNome.setText("");
-                    txtIdade.setText("");
-                    txtCNome.setText("");
-                    Snackbar.make(v, "Atualizou!", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                    voltarInicial();
-
-                }else{
-                    Snackbar.make(v, "Erro ao atualizar, consulte os logs!", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
-            }
-        });
+            });
+        }
 
 
     }
@@ -246,6 +268,84 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.includecadastro).setVisibility(View.INVISIBLE);
         findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
         findViewById(R.id.inicial).setVisibility(View.INVISIBLE);
+        controle = 0;
+        limpaDados();
+    }
+
+    private void telaDeletar(){
+        escondeBotoes();
+        if(controle == 4) {
+            findViewById(R.id.includecadastro).setVisibility(View.INVISIBLE);
+            findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
+            findViewById(R.id.butConsultar).setVisibility(View.INVISIBLE);
+
+            clienteList = new ArrayList<>();
+            dao = new ClienteDAO(getBaseContext());
+
+            if (controle == 4) {
+                btnCNome.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String nome = txtCNome.getText().toString();
+                        clienteList = dao.retornaConsulta(nome);
+                        if (clienteList != null) {
+                            if (clienteList.size() == 1) {
+                                Log.d("teste", "Clicou!");
+                                findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
+                                findViewById(R.id.butDeletar).setVisibility(View.VISIBLE);
+
+                                findViewById(R.id.butCadastrar).setVisibility(View.INVISIBLE);
+                                findViewById(R.id.butAtualizar).setVisibility(View.INVISIBLE);
+                                findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
+
+                                txtNome.setText(clienteList.get(0).getNome());
+                                txtIdade.setText(clienteList.get(0).getIdade() + "");
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Seja mais específico!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                    }
+
+                });
+            }
+            btnDeletar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final View view = v;
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                    builder.setTitle("Confirmação")
+                            .setMessage("Tem certeza que deseja excluir este cliente?")
+                            .setPositiveButton("Excluir", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    int id = clienteList.get(0).getId();
+                                    dao = new ClienteDAO(getBaseContext());
+                                    boolean sucesso = dao.deletar(id);
+                                    if(sucesso) {
+                                        limpaDados();
+                                        Snackbar.make(view, "Excluiu!", Snackbar.LENGTH_LONG)
+                                                .setAction("Action", null).show();
+                                        voltarInicial();
+                                    }else{
+                                        Snackbar.make(view, "Erro ao excluir o cliente!", Snackbar.LENGTH_LONG)
+                                                .setAction("Action", null).show();
+                                    }
+                                }
+                            })
+                            .setNegativeButton("Cancelar", null)
+                            .create()
+                            .show();
+                }
+            });
+        }
+
+    }
+
+    private void limpaDados(){
+        txtCNome.setText("");
+        txtNome.setText("");
+        txtIdade.setText("");
     }
 
     /*

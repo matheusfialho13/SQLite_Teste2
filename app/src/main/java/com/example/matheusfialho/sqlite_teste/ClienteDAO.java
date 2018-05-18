@@ -40,7 +40,6 @@ public class ClienteDAO {
         return salvar(0, nome, idade);
     }
 
-
     public boolean salvar(int id, String nome, int idade){
         boolean resultado;
         //db = gw.getWritableDatabase();
@@ -63,7 +62,6 @@ public class ClienteDAO {
         else
             return "Registro Inserido com sucesso";
         */
-
     }
 
     public List<Cliente> retornarTodos(){
@@ -109,7 +107,6 @@ public class ClienteDAO {
 
         if (cursor != null && cursor.moveToFirst()) {
             listClientes = new ArrayList<>();
-            //cursor.moveToFirst();
             do {
                 int _id = cursor.getInt(cursor.getColumnIndex(DbHelper._ID));
                 String nome = cursor.getString(cursor.getColumnIndex(DbHelper.NOME));
@@ -126,7 +123,10 @@ public class ClienteDAO {
             }
         }
         return listClientes;
+    }
 
+    public boolean deletar(int id){
+        return gw.getDatabase().delete(TABLE_CLIENTES, "_ID = ?", new String[]{ id + "" }) > 0;
     }
 
 }
