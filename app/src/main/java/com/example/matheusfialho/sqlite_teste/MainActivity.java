@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         txtCNome = (EditText) findViewById(R.id.txtCNome);
 
         btnAtualizar = (Button) findViewById(R.id.butAtualizar);
+        findViewById(R.id.inicial).setVisibility(View.INVISIBLE);
 
         btnCadastrar = (Button)findViewById(R.id.butCadastrar);
         btnCadastrar.setOnClickListener(new View.OnClickListener() {
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("Clientes", listaClientes.get(i).getNome());
                     }
                 }
+                txtCNome.setText("");
 
             }
         });
@@ -127,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
                 escondeBotoes();
+                txtCNome.setText("");
 
             }
         });
@@ -158,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 String nome = txtCNome.getText().toString();
                 dao = new ClienteDAO(getBaseContext());
                 dao.retornaConsulta(nome);
+                txtCNome.setText("");
 
             }
         });
@@ -172,6 +176,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.edit).setVisibility(View.INVISIBLE);
         findViewById(R.id.delete).setVisibility(View.INVISIBLE);
 
+        findViewById(R.id.inicial).setVisibility(View.VISIBLE);
+
     }
 
     private void telaAtualizar(){
@@ -179,36 +185,38 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.includeconsultar).setVisibility(View.VISIBLE);
         findViewById(R.id.butConsultar).setVisibility(View.INVISIBLE);
+
         clienteList = new ArrayList<>();
-        String nome = txtCNome.getText().toString();
         dao = new ClienteDAO(getBaseContext());
-        clienteList = dao.retornaConsulta(nome);
+
         btnCNome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("teste", "Clicou!");
-                if(clienteList.size() == 1){
-                    findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
-                    findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
-                    //String idade = toString(clienteList.get(0).getIdade());
-                    txtNome.setText(clienteList.get(0).getNome());
-                    txtIdade.setText(clienteList.get(0).getIdade()+"");
-                } else {
-                    Toast.makeText(getApplicationContext(), "Seja mais específico!", Toast.LENGTH_SHORT).show();
+                String nome = txtCNome.getText().toString();
+                clienteList = dao.retornaConsulta(nome);
+                if(clienteList != null) {
+                    if (clienteList.size() == 1) {
+                        Log.d("teste", "Clicou!");
+                        findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
+                        findViewById(R.id.includecadastro).setVisibility(View.VISIBLE);
+                        txtNome.setText(clienteList.get(0).getNome());
+                        txtIdade.setText(clienteList.get(0).getIdade() + "");
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Seja mais específico!", Toast.LENGTH_SHORT).show();
+                    }
                 }
-
-
 
             }
         });
-        final int id = clienteList.get(0).getId();
-        final String novoNome = txtNome.getText().toString();
-        final int Novaidade = Integer.parseInt(txtIdade.getText().toString());
+
         btnAtualizar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int id = clienteList.get(0).getId();
+                String novoNome = txtNome.getText().toString();
+                int NovaIdade = Integer.parseInt(txtIdade.getText()+"");
                 dao = new ClienteDAO(getBaseContext());
-                boolean sucesso = dao.salvar(id, novoNome, Novaidade);
+                boolean sucesso = dao.salvar(id, novoNome, NovaIdade);
                 if(sucesso) {
                     //limpa os campos
                     txtNome.setText("");
@@ -237,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.includecadastro).setVisibility(View.INVISIBLE);
         findViewById(R.id.includeconsultar).setVisibility(View.INVISIBLE);
+        findViewById(R.id.inicial).setVisibility(View.INVISIBLE);
     }
 
     /*

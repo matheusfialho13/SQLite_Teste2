@@ -117,6 +117,8 @@ public class ClienteDAO {
                 listClientes.add(new Cliente(_id, nome, idade));
             } while (cursor.moveToNext());
                 cursor.close();
+        } else if(cursor == null){
+            Log.d("Clientes", "Não existe nenhum registro de "+nomeCliente);
         }
         if (listClientes != null && !listClientes.isEmpty()) {
             for (int i = 0; i < listClientes.size(); i++) {
